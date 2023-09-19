@@ -4,6 +4,10 @@
 
 export const environment = {
   production: false,
+  //si useEmulators es true, el entorno se conectará localmente, si es false
+  //usará la conexión de firebase cloud
+  useEmulators: true,
+  //credenciales de firebase para conectarse a la base de datos del servidor cloud (firebase.google)
   firebase: {
     apiKey: "AIzaSyBxR4ZprELbKZ0A7CUlpWD114tmYe_AGJQ",
     authDomain: "fir-course-bcfcb.firebaseapp.com",
@@ -14,6 +18,11 @@ export const environment = {
   },
   api: {},
 };
+
+//para conectarse a  firebase localmente a través de emulador por comando se usa:
+//firebase login --> donde pedirá el correo de gmail
+//firebase init --> para iniciar el proceso de creación de la base de datos en local
+//se necesita crear un storage si no existe
 
 /*
  * For easier debugging in development mode, you can import the following file
