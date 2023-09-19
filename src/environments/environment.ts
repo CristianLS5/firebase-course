@@ -23,6 +23,8 @@ export const environment = {
 //firebase login --> donde pedirá el correo de gmail
 //firebase init --> para iniciar el proceso de creación de la base de datos en local
 //se necesita crear un storage si no existe
+//----//
+
 
 /*
  * For easier debugging in development mode, you can import the following file

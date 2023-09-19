@@ -97,11 +97,33 @@ import { MatNativeDateModule } from "@angular/material/core";
   providers: [
     //para que funciona el emulador de FireStore
     //to test predefined users connected to the database with different roles
-    { provide: USE_AUTH_EMULATOR, useValue: environment.useEmulators ? ['localhost', 9099] : undefined },
+    {
+      provide: USE_AUTH_EMULATOR,
+      useValue: environment.useEmulators ? ["localhost", 9099] : undefined,
+    },
     //este emulador nos da una versión local de la base de datos FireStore
-    { provide: USE_FIRESTORE_EMULATOR, useValue: environment.useEmulators ? ['localhost', 8080] : undefined },
+    {
+      provide: USE_FIRESTORE_EMULATOR,
+      useValue: environment.useEmulators ? ["localhost", 8080] : undefined,
+    },
     //to run FireBase Cloud funtions locally
-    { provide: USE_FUNCTIONS_EMULATOR, useValue: environment.useEmulators ? ['localhost', 5001] : undefined }
+    {
+      provide: USE_FUNCTIONS_EMULATOR,
+      useValue: environment.useEmulators ? ["localhost", 5001] : undefined,
+    },
+    //para iniciar SÓLO la parte de FireStore
+    ////firebase emulator:start --only firestore////
+    //es una base de datos temporal que se usa para pruebas
+    //si cierras la conexión local, los datos que hay en FireStore se borran
+    //para exportar los datos que se han creado en el emulador de FireStore
+    /////firebase emulators:export NOMBRE_DE_LA_CARPETA ///
+    //para importar los datos creados al emulador, y no tene que crearlos cada vez
+    //firebase emulators:start --only firestore --import NOMBRE_DE_LA_CARPETA
+    //---//
+    //para no tener que escribir el comando entero cada vez se puede poner en una
+    //"npm command" para acortarlo, en este caso se va al fichero package.json
+    //en scripts: ejemplo --> 
+    //"local-dev-firebase": "firebase emulators:start --only firestore,auth,functions --import test-data",
   ],
   bootstrap: [AppComponent],
 })
