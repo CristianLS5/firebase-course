@@ -1,8 +1,8 @@
 import { Injectable } from "@angular/core";
 import { AngularFirestore } from "@angular/fire/firestore";
-import { Observable } from "rxjs";
+import { Observable, from } from "rxjs";
 import { Course } from "../model/course";
-import { map } from "rxjs/operators";
+import { concatMap, map } from "rxjs/operators";
 import { convertSnaps } from "./db-utils";
 
 @Injectable({
@@ -26,8 +26,48 @@ export class CoursesService {
   }
 
   createCourse(newCourse: Partial<Course>, courseId?: string) {
-   return new Observable<Course>(observer => {
-    observer.next(newCourse);
-   })
+    return this.db
+      .collection("courses", (ref) =>
+        //antes de crear un curso hay que saber cual es el que tiene el "seqNo" más
+        //grande, para poder asignar el ID+1 al nuevo curso
+        ref.orderBy("seqNo", "desc").limit(1)
+      )
+      .get()
+      .pipe(
+        concatMap((resultOfQuery) => {
+          const courses = convertSnaps<Course>(resultOfQuery);
+          // "||" significa que si no hay cursos disponibles, se pondria un 0
+          //por defecto en lugar de un null
+          //el operador  ??  solo considerará  null  o  undefined , no otros valores falsy como  0  o  ""
+          //se mira el primer curso del array (courses[0]) ya que anteriormente ya se ha limitado
+          //el número de cursos con el (limit(1))
+          const lasCourseSeqNo = courses[0]?.seqNo || 0;
+
+          const course = {
+            ...newCourse,
+            seqNo: lasCourseSeqNo + 1,
+          };
+          let save$: Observable<any>;
+          if (courseId) {
+            //si existe la ID  se usa el "set" para sobreescribir cualqueir cosa que hubiera
+            //anteriormente bajo ese ID
+            save$ = from(this.db.doc(`courses/${courseId}`).set(course));
+            //si no existe la ID se usa el "add" para añadir un nuevo curso
+          } else {
+            save$ = from(this.db.collection("courses").add(course));
+          }
+          //en el caso de guardar un curso sin ID se debe hacer lo siguiente a través de "map"
+          return save$.pipe(
+            //internamente FireBase crea un ID, pero para poder verlo al guardar el curso,
+            //lo mostramos en la response junto con el resto de propiedades del curso
+            map((response) => {
+              return {
+                id: courseId || response.id,
+                ...course,
+              };
+            })
+          );
+        })
+      );
   }
 }

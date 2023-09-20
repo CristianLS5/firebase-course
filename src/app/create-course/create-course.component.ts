@@ -37,13 +37,26 @@ export class CreateCourseComponent implements OnInit {
   ) {}
 
   ngOnInit() {
+    //client side generated ID using the AngularFire API
     this.courseId = this.afService.createId();
   }
 
   onCreateCourse() {
-    const newCourse = {
-      ...this.form.value,
-    } as Course;
+    //al ser "category" un array de valores, no se puede coger los datos del formulario a pelo
+    // const newCourse = {
+    //   ...this.form.value,
+    // } as Course;
+
+    const val = this.form.value;
+    //is  a partial course because we don't have the ID
+    const newCourse: Partial<Course> = {
+      description: val.description,
+      url: val.url,
+      longDescription: val.longDescription,
+      promo: val.promo,
+      categories: [val.category],
+      promoStartAt: val.promoStartAt,
+    };
 
     //we need to modify the timestamp from the form to a firestore timestamp
     newCourse.promoStartAt = Timestamp.fromDate(this.form.value.promoStartAt);
