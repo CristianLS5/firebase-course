@@ -24,4 +24,10 @@ export class CoursesService {
       .get()
       .pipe(map((result) => convertSnaps<Course>(result)));
   }
+
+  createCourse(newCourse: Partial<Course>, courseId?: string) {
+   return new Observable<Course>(observer => {
+    observer.next(newCourse);
+   })
+  }
 }

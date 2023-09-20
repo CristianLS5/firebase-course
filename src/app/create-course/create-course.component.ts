@@ -8,6 +8,7 @@ import { Router } from "@angular/router";
 import { AngularFireStorage } from "@angular/fire/storage";
 import firebase from "firebase/app";
 import Timestamp = firebase.firestore.Timestamp;
+import { CoursesService } from "../services/courses.service";
 
 @Component({
   selector: "create-course",
@@ -15,6 +16,8 @@ import Timestamp = firebase.firestore.Timestamp;
   styleUrls: ["create-course.component.css"],
 })
 export class CreateCourseComponent implements OnInit {
+  courseId: string;
+
   form = this.fb.group({
     description: ["", Validators.required],
     category: ["BEGINNER", Validators.required],
@@ -24,9 +27,18 @@ export class CreateCourseComponent implements OnInit {
     promoStartAt: [null],
   });
 
-  constructor(private fb: FormBuilder) {}
+  constructor(
+    private fb: FormBuilder,
+    private coursesService: CoursesService,
+    //in order to generate an unique identifier for the course into FireStore we need
+    //to use the AngularFire service
+    private afService: AngularFirestore,
+    private router: Router
+  ) {}
 
-  ngOnInit() {}
+  ngOnInit() {
+    this.courseId = this.afService.createId();
+  }
 
   onCreateCourse() {
     const newCourse = {
@@ -37,5 +49,19 @@ export class CreateCourseComponent implements OnInit {
     newCourse.promoStartAt = Timestamp.fromDate(this.form.value.promoStartAt);
 
     console.log(newCourse);
+
+    this.coursesService
+      .createCourse(newCourse, this.courseId)
+      .pipe(
+        tap((course) => {
+          console.log("course created", course);
+          this.router.navigateByUrl("/courses");
+        }),
+        catchError((error) => {
+          console.log("error creating the course");
+          return throwError(error);
+        })
+      )
+      .subscribe();
   }
 }
