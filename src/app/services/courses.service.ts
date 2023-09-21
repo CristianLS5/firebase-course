@@ -10,7 +10,6 @@ import { Lesson } from "../model/lesson";
   providedIn: "root",
 })
 export class CoursesService {
-
   constructor(private db: AngularFirestore) {}
 
   //se definen los metódos usando la API pública  de FireStore para nuestro servicio
@@ -114,7 +113,20 @@ export class CoursesService {
       );
   }
 
-  findCourseByUrl(courseUrl: string): Observable<Course> {
-    throw new Error("Method not implemented.");
-}
+  findCourseByUrl(courseUrl: string): Observable<Course | null> {
+    return this.db
+      .collection("courses", (ref) => ref.where("url", "==", courseUrl))
+      .get()
+      .pipe(
+        map((resultOfQuery) => {
+          //get the list of matching documents (courses)
+          const courses = convertSnaps<Course>(resultOfQuery);
+
+          //se comprueba que realmente devuelva un solo curso (url única)
+          //si devuelve 1, la posición 0  correspondera al curso que coincide con la url
+          //sinó el resultado será inválido
+          return courses.length == 1 ? courses[0] : null;
+        })
+      );
+  }
 }
