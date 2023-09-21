@@ -4,6 +4,7 @@ import { Course } from "../model/course";
 import { FormBuilder, Validators, FormGroup } from "@angular/forms";
 import { AngularFireStorage } from "@angular/fire/storage";
 import { Observable } from "rxjs";
+import { CoursesService } from "../services/courses.service";
 
 @Component({
   selector: "edit-course-dialog",
@@ -20,7 +21,8 @@ export class EditCourseDialogComponent {
     private fb: FormBuilder,
     //se reciben los datos del curso que se va a editar a través de la dependency
     //Injection que viene dado por el componente "courses-card-list.component"
-    @Inject(MAT_DIALOG_DATA) course: Course
+    @Inject(MAT_DIALOG_DATA) course: Course,
+    private coursesService: CoursesService
   ) {
     this.course = course;
 
@@ -31,6 +33,17 @@ export class EditCourseDialogComponent {
       description: [course.description, Validators.required],
       longDescription: [course.longDescription, Validators.required],
       promo: [course.promo],
+    });
+  }
+
+  save() {
+    const changes = this.form.value;
+
+    //esto devolvera un observable, por lo que hay que subscribirse
+    this.coursesService.updateCourse(this.course.id, changes).subscribe(() => {
+      //para distinguir el cierre del dialogo, de cuando se cierra sin modificar
+      //y modificado, se añaden los cambios realizados del curso
+      this.dialogRef.close(changes);
     });
   }
 
