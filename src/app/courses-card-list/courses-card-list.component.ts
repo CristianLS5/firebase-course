@@ -12,6 +12,7 @@ import { EditCourseDialogComponent } from "../edit-course-dialog/edit-course-dia
 import { catchError, tap } from "rxjs/operators";
 import { throwError } from "rxjs";
 import { Router } from "@angular/router";
+import { CoursesService } from "../services/courses.service";
 
 @Component({
   selector: "courses-card-list",
@@ -28,7 +29,11 @@ export class CoursesCardListComponent implements OnInit {
   @Output()
   courseDeleted = new EventEmitter<Course>();
 
-  constructor(private dialog: MatDialog, private router: Router) {}
+  constructor(
+    private dialog: MatDialog,
+    private router: Router,
+    private coursesService: CoursesService
+  ) {}
 
   ngOnInit() {}
 
@@ -56,5 +61,23 @@ export class CoursesCardListComponent implements OnInit {
           this.courseEdited.emit();
         }
       });
+  }
+
+  //al eliminar un curso, no se eliminan las lessons asociadas al él, ya que no es private
+  //del documento, sinó que es una collección
+  deleteCourse(course: Course) {
+    this.coursesService
+      .deleteCourse(course.id)
+      .pipe(
+        tap(() => {
+          console.log("Course deleted: ", course);
+          this.courseDeleted.emit(course);
+        }),
+        catchError((error) => {
+          console.log("could not be deleted: " + error);
+          return throwError(error);
+        })
+      )
+      .subscribe();
   }
 }

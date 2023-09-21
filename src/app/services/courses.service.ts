@@ -77,4 +77,8 @@ export class CoursesService {
     //tipo "Promise" a un observable
     return from(this.db.doc(`courses/${courseId}`).update(changes));
   }
+
+  deleteCourse(courseId: string) {
+    return from(this.db.doc(`courses/${courseId}`).delete());
+  }
 }
