@@ -70,4 +70,11 @@ export class CoursesService {
         })
       );
   }
+  //devolverá un observable any, ya que sólo nos vale para saber si el curso se ha
+  //modificado correctamente o no
+  updateCourse(courseId: string, changes: Partial<Course>): Observable<any> {
+    //se añade el operador from, para transformar loque devuelve el update, que es de
+    //tipo "Promise" a un observable
+    return from(this.db.doc(`courses/${courseId}`).update(changes));
+  }
 }
