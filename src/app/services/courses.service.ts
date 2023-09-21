@@ -5,6 +5,8 @@ import { Course } from "../model/course";
 import { concatMap, map } from "rxjs/operators";
 import { convertSnaps } from "./db-utils";
 import { Lesson } from "../model/lesson";
+import firebase from "firebase";
+import OrderByDirection = firebase.firestore.OrderByDirection;
 
 @Injectable({
   providedIn: "root",
@@ -128,5 +130,26 @@ export class CoursesService {
           return courses.length == 1 ? courses[0] : null;
         })
       );
+  }
+
+  findLessons(
+    courseId: string,
+    sortOrder: OrderByDirection = "asc",
+    pageNumber = 0,
+    pageSize = 3
+  ): Observable<Lesson[]> {
+    return this.db
+      .collection(`courses/${courseId}/lessons`, (ref) =>
+        ref
+          .orderBy("seqNo", sortOrder)
+          //limite de clases a mostrar
+          .limit(pageSize)
+          //para que empiece la query por el valor que se le inserta
+          //en este caso mostraria 3 clases por cada página
+          //si fuera pageNumber = 2, se mostrarian las clases 4,5,6, al ser la segunda página
+          .startAfter(pageNumber * pageSize)
+      )
+      .get()
+      .pipe(map((resultOfQuery) => convertSnaps<Lesson>(resultOfQuery)));
   }
 }
