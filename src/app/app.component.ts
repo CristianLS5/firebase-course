@@ -14,7 +14,11 @@ import { UserService } from "./services/user.service";
 export class AppComponent implements OnInit {
   //el userService se va a instanciar, el constructor se va a llamar,
   //la información del AngularFire authentication se podrá visualizar
-  constructor(private userService: UserService) {}
+  constructor(public user: UserService) {}
 
   ngOnInit() {}
+
+  logout() {
+    this.user.logout();
+  }
 }
