@@ -10,6 +10,7 @@ import { Lesson } from "../model/lesson";
   providedIn: "root",
 })
 export class CoursesService {
+
   constructor(private db: AngularFirestore) {}
 
   //se definen los metódos usando la API pública  de FireStore para nuestro servicio
@@ -112,4 +113,8 @@ export class CoursesService {
         })
       );
   }
+
+  findCourseByUrl(courseUrl: string): Observable<Course> {
+    throw new Error("Method not implemented.");
+}
 }
