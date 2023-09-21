@@ -4,6 +4,7 @@ import { Observable, from } from "rxjs";
 import { Course } from "../model/course";
 import { concatMap, map } from "rxjs/operators";
 import { convertSnaps } from "./db-utils";
+import { Lesson } from "../model/lesson";
 
 @Injectable({
   providedIn: "root",
@@ -80,5 +81,35 @@ export class CoursesService {
 
   deleteCourse(courseId: string) {
     return from(this.db.doc(`courses/${courseId}`).delete());
+  }
+
+  deleteCourseAndLessons(courseId: string) {
+    return this.db
+      .collection(`courses/${courseId}/lessons`)
+      .get()
+      .pipe(
+        concatMap((resultOfQuery) => {
+          const lessons = convertSnaps<Lesson>(resultOfQuery);
+          //se crea un batch write para poder eliminar todas las clases que contiene la
+          //colección lessons para luego poder eliminar el documento curso asociado
+          const batch = this.db.firestore.batch();
+
+          //para poder eliminar las clases del curso, primeor hay que pillar la referencia
+          //del curso que contiene las clases
+          const courseRef = this.db.doc(`courses/${courseId}`).ref;
+
+          batch.delete(courseRef);
+
+          for (let lesson of lessons) {
+            const lessonRef = this.db.doc(
+              `courses/${courseId}/lessons/${lesson.id}`
+            ).ref;
+
+            batch.delete(lessonRef);
+          }
+
+          return from(batch.commit());
+        })
+      );
   }
 }

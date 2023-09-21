@@ -67,7 +67,7 @@ export class CoursesCardListComponent implements OnInit {
   //del documento, sinó que es una collección
   deleteCourse(course: Course) {
     this.coursesService
-      .deleteCourse(course.id)
+      .deleteCourseAndLessons(course.id)
       .pipe(
         tap(() => {
           console.log("Course deleted: ", course);
