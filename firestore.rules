@@ -1,7 +1,25 @@
-rules_version = '2';
+//no hace falta tener la seguridad de la base de datos en el backend,
+//con este fichero se pueden pasar varias rules de seguridad y se pueden
+//deployar directamente a la base de datos
+//---//
 
-service cloud.firestore {
-  match /databases/{database}/documents {
+rules_version = '2'; //la versión de las rules de FireStore
+service cloud.firestore { //para determinar que tipo de rules son, en este caso para la base de datos de FireStore
+//cada "match" significa que se esta declarando una rule
+  match /databases/{database}/documents { //indica la ruta donde se aplica la roule
+    match /{document=**} { //esta rule se aplicará a todos los documentos
+      //allow read, write: if request.time < timestamp.date(2023, 10, 18);
+      allow read, write: if true; //permte leer y escribir
+    }
+  }
+}
+
+///---//
+//cada vez que se hace una modificación o lectura desde la aplicación usando
+//AngularFire, la petición es enviada al servidor de FireStore.
+//El servidor utilizará la configuración que se encuentra en este fichero "firestore.rules"
+//para determinar si las peticiones de modificacion o lectura se pueden hacer o no
+///----///
 
     // This rule allows anyone with your Firestore database reference to view, edit,
     // and delete all data in your Firestore database. It is useful for getting
@@ -12,8 +30,8 @@ service cloud.firestore {
     // Make sure to write security rules for your app before that time, or else
     // all client requests to your Firestore database will be denied until you Update
     // your rules
-    match /{document=**} {
-      allow read, write: if request.time < timestamp.date(2023, 10, 18);
-    }
-  }
-}
+
+///----///
+  //la ventaja de usar emulador es que puedes realizar los cambios de rules en local sin
+  //necesidad de ir cambiándolos en producción cada vez, lo que comporta tiempos de retraso a que
+  //propaguen todos los cambios más el tiempo que tardase en deployarse
