@@ -16,7 +16,8 @@ export class AppComponent implements OnInit {
   //la información del AngularFire authentication se podrá visualizar
   constructor(public user: UserService) {}
 
-  ngOnInit() {}
+  ngOnInit() {
+  }
 
   logout() {
     this.user.logout();
