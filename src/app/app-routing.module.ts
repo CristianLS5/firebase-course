@@ -13,18 +13,34 @@ import {
 import { CreateUserComponent } from "./create-user/create-user.component";
 import { CourseResolver } from "./services/course.resolver";
 
+const redirectUnauthorizedToLogin = () => redirectUnauthorizedTo(["login"]);
+
+const adminOnly = () => hasCustomClaim("admin");
+
 const routes: Routes = [
   {
     path: "",
     component: HomeComponent,
+    canActivate: [AngularFireAuthGuard],
+    data: {
+      authGuardPipe: redirectUnauthorizedToLogin,
+    },
   },
   {
     path: "create-course",
     component: CreateCourseComponent,
+    canActivate: [AngularFireAuthGuard],
+    data: {
+      authGuardPipe: adminOnly,
+    },
   },
   {
     path: "create-user",
     component: CreateUserComponent,
+    canActivate: [AngularFireAuthGuard],
+    data: {
+      authGuardPipe: adminOnly,
+    },
   },
   {
     path: "about",
@@ -41,6 +57,10 @@ const routes: Routes = [
     //el proceso para hacer matching con el curso se hará a través del Resolver
     resolve: {
       course: CourseResolver,
+    },
+    canActivate: [AngularFireAuthGuard],
+    data: {
+      authGuardPipe: redirectUnauthorizedToLogin,
     },
   },
   {
