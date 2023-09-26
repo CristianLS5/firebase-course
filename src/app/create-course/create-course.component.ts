@@ -18,6 +18,8 @@ import { CoursesService } from "../services/courses.service";
 export class CreateCourseComponent implements OnInit {
   courseId: string;
 
+  percentageChanges$: Observable<number>;
+
   form = this.fb.group({
     description: ["", Validators.required],
     category: ["BEGINNER", Validators.required],
@@ -93,6 +95,8 @@ export class CreateCourseComponent implements OnInit {
       //a la página de cursos
       cacheControl: "max-age=2592000,public",
     });
+
+    this.percentageChanges$ = uploadTask.percentageChanges();
 
     uploadTask.snapshotChanges().subscribe();
   }
