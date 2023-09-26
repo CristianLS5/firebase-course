@@ -14,6 +14,8 @@
       <span>Course thumbnail:</span>
 
       <img class="course-thumbnail mat-elevation-z3" />
+
+      <input type="file" (change)="uploadImage($event)" />
     </div>
 
     <mat-form-field appearance="outline">
@@ -25,11 +27,15 @@
     </mat-form-field>
 
     <mat-form-field appearance="outline">
-      <input placeholder="Course url" matInput formControlName="url"/>
+      <input placeholder="Course url" matInput formControlName="url" />
     </mat-form-field>
 
     <mat-form-field appearance="outline">
-      <textarea matInput placeholder="Course description" formControlName="longDescription"></textarea>
+      <textarea
+        matInput
+        placeholder="Course description"
+        formControlName="longDescription"
+      ></textarea>
     </mat-form-field>
 
     <mat-slide-toggle class="promo" color="primary" formControlName="promo">
@@ -38,7 +44,11 @@
 
     <mat-form-field appearance="outline">
       <mat-label>Promotion start date</mat-label>
-      <input matInput [matDatepicker]="promoStartPicker" formControlName="promoStartAt"/>
+      <input
+        matInput
+        [matDatepicker]="promoStartPicker"
+        formControlName="promoStartAt"
+      />
       <mat-datepicker-toggle
         matSuffix
         [for]="promoStartPicker"
@@ -46,6 +56,13 @@
       <mat-datepicker #promoStartPicker></mat-datepicker>
     </mat-form-field>
 
-    <button mat-raised-button color="warn" [disabled]="!form.valid" (click)="onCreateCourse()"> Create Course </button>
+    <button
+      mat-raised-button
+      color="warn"
+      [disabled]="!form.valid"
+      (click)="onCreateCourse()"
+    >
+      Create Course
+    </button>
   </form>
 </div>

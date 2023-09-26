@@ -33,7 +33,9 @@ export class CreateCourseComponent implements OnInit {
     //in order to generate an unique identifier for the course into FireStore we need
     //to use the AngularFire service
     private afService: AngularFirestore,
-    private router: Router
+    private router: Router,
+    //in order to upload files into FireStore we need to use the AngularFireStorage service
+    private storage: AngularFireStorage
   ) {}
 
   ngOnInit() {
@@ -76,5 +78,22 @@ export class CreateCourseComponent implements OnInit {
         })
       )
       .subscribe();
+  }
+
+  uploadImage(event) {
+    const file: File = event.target.files[0];
+
+    const filePath = `courses/${this.courseId}/${file.name}`;
+
+    const uploadTask = this.storage.upload(filePath, file, {
+      //the metadata of the file
+      //contentType: file.type,
+      //de esta forma la imagen se guarda en cache del navegador del usuario
+      //un cierto tiempo sin necesidad de descargarla cada vez que se acceda
+      //a la página de cursos
+      cacheControl: "max-age=2592000,public",
+    });
+
+    uploadTask.snapshotChanges().subscribe();
   }
 }
