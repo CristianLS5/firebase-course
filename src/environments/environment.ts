@@ -6,7 +6,7 @@ export const environment = {
   production: false,
   //si useEmulators es true, el entorno se conectará localmente, si es false
   //usará la conexión de firebase cloud
-  useEmulators: false,
+  useEmulators: true,
   //credenciales de firebase para conectarse a la base de datos del servidor cloud (firebase.google)
   firebase: {
     apiKey: "AIzaSyBxR4ZprELbKZ0A7CUlpWD114tmYe_AGJQ",

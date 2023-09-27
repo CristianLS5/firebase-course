@@ -20,6 +20,8 @@ export class CreateCourseComponent implements OnInit {
 
   percentageChanges$: Observable<number>;
 
+  iconUrl: string;
+
   form = this.fb.group({
     description: ["", Validators.required],
     category: ["BEGINNER", Validators.required],
@@ -98,6 +100,20 @@ export class CreateCourseComponent implements OnInit {
 
     this.percentageChanges$ = uploadTask.percentageChanges();
 
-    uploadTask.snapshotChanges().subscribe();
+    uploadTask
+      .snapshotChanges()
+      .pipe(
+        //cuando el observable deje de emitir valores (que la imagen se haya subido al 100%)
+        //se descarga la URL de la imagen donde se encuentra dentro de Firebase storage
+        //para luego poder usar la variable iconUrl para mostar la imagen en el html
+        last(),
+        concatMap(() => this.storage.ref(filePath).getDownloadURL()),
+        tap((url) => (this.iconUrl = url)),
+        catchError((error) => {
+          console.log("error uploading the image");
+          return throwError(error);
+        })
+      )
+      .subscribe();
   }
 }
