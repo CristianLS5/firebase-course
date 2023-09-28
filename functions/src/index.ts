@@ -1,4 +1,5 @@
 import * as functions from "firebase-functions";
+import { createUserApp } from "./create-user";
 
 //los contenedores que se crean para ejecutar las cloud functions
 //contendrán todas las funciones, independientemente de si se ejecuta una u otra.
@@ -39,3 +40,9 @@ export const onDeleteCourseUpdatePromoCounter = functions.firestore
       await import("./promotions-counter/delete-course")
     ).default(snapshot, context);
   });
+
+  //para acceder al endpoint de la funcion se mira al inciializar el emulador
+  //en este caso:
+  //functions[us-central1-createUser]: http function initialized (http://127.0.0.1:5001/fir-course-bcfcb/us-central1/createUser).
+  //se añade al fichero "environments" para tenerla a mano
+  export const createUser = functions.https.onRequest(createUserApp);
