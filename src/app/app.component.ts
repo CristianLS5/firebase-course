@@ -5,6 +5,7 @@ import { concatMap, filter, map } from "rxjs/operators";
 import { AngularFirestore } from "@angular/fire/firestore";
 import { Router } from "@angular/router";
 import { UserService } from "./services/user.service";
+import { AuthTokenService } from "./services/auth-token.service";
 
 @Component({
   selector: "app-root",
@@ -14,10 +15,9 @@ import { UserService } from "./services/user.service";
 export class AppComponent implements OnInit {
   //el userService se va a instanciar, el constructor se va a llamar,
   //la información del AngularFire authentication se podrá visualizar
-  constructor(public user: UserService) {}
+  constructor(public user: UserService, private token: AuthTokenService) {}
 
-  ngOnInit() {
-  }
+  ngOnInit() {}
 
   logout() {
     this.user.logout();

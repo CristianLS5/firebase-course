@@ -23,7 +23,9 @@ export class CreateUserComponent {
     const user = this.form.value;
 
     console.log(user);
-
+    //se ha añadido en la petición HTTP que sea envía a la cloud function de Firebase
+    //un nuevo header, el de authorización que contiene JWT que autoriza al usuario que
+    //obtenemos de Firebase Authentication
     this.http
       .post(environment.api.createUser, {
         email: user.email,
