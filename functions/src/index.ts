@@ -1,28 +1,41 @@
 import * as functions from "firebase-functions";
-import { db } from "./init";
 
-import { FieldValue } from "firebase-admin/firestore";
+//los contenedores que se crean para ejecutar las cloud functions
+//contendrán todas las funciones, independientemente de si se ejecuta una u otra.
 
-export const onAddCourseUpdatePromoCounter = 
-//aquí hay dos transacciones
-//la primera que se ejecuta al añadir un nuevo documento
-functions
+export const onAddCourseUpdatePromoCounter = functions
   .runWith({
     timeoutSeconds: 300,
     memory: "1GB",
   })
   .firestore.document("courses/{courseId}")
   .onCreate(async (snapshot, context) => {
-    //la segunda que se ejecuta si el curso tiene el campo "promo" a true
-    functions.logger.debug(
-      `Running add course trigger for courseId ${context.params.courseId}`
-    );
+    //el trigger de esta función es cuando se crea un nuevo documento,
+    //se llama a la funcion que esta en el fichero "add-course.ts"
+    //como son dos promesas, hay que esperar a que se resuelvan para realizar la siguiente acción
+    //en este caso, está la transacción de la creación del documento:
+    //.onCreate(async (snapshot, context) => { await (  await import("./promotions-counter/add-course"))
+    //y el trigger para aumentar el contador de cursos en promoción que está
+    //en el fichero "add-course.ts":
+    //export default async (snapshot, context) => { await import("./promotions-counter/add-course")
+    //al haber 2 promesas tiene que haber dos esperas (await)
+    await (
+      await import("./promotions-counter/add-course")
+    ).default(snapshot, context);
+  });
 
-    const course = snapshot.data();
+export const onUpdateCourseUpdatePromoCounter = functions.firestore
+  .document("courses/{courseId}")
+  .onUpdate(async (change, context) => {
+    await (
+      await import("./promotions-counter/update-course")
+    ).default(change, context);
+  });
 
-    if (course.promo) {
-      return db.doc("courses/stats").update({
-        totalPromo: FieldValue.increment(1),
-      });
-    }
+export const onDeleteCourseUpdatePromoCounter = functions.firestore
+  .document("courses/{courseId}")
+  .onDelete(async (snapshot, context) => {
+    await (
+      await import("./promotions-counter/delete-course")
+    ).default(snapshot, context);
   });
