@@ -1,5 +1,6 @@
 import express = require("express");
 import * as functions from "firebase-functions";
+import { auth, db } from "./init";
 
 //bodyparsermiddleware --> is a commonly used express middleware
 const bodyParser = require("body-parser");
@@ -26,6 +27,16 @@ createUserApp.post("/", async (request, response) => {
     const email = request.body.email,
       password = request.body.password,
       admin = request.body.admin;
+
+    const user = await auth.createUser({
+      email,
+      password,
+    });
+
+    await auth.setCustomUserClaims(user.uid, { admin });
+
+    //crear un documento en la colección users
+    db.doc(`users/${user.uid}`).set({});
 
     response.status(200).json({ message: "User craeted OK" });
   } catch (error) {
