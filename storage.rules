@@ -19,3 +19,6 @@ service firebase.storage {
 
   }
 }
+
+//para deployar las rules del storage
+//firebase deploy --only storage
