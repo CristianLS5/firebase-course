@@ -1,6 +1,7 @@
 import express = require("express");
 import * as functions from "firebase-functions";
 import { auth, db } from "./init";
+import { getUserCredentialsMiddleware } from "./auth.middleware";
 
 //bodyparsermiddleware --> is a commonly used express middleware
 const bodyParser = require("body-parser");
@@ -15,6 +16,7 @@ export const createUserApp = express();
 createUserApp.use(bodyParser.json());
 //de esta forma nuestro endpoint está listo para recibir peticiones HTTP desde el frontal
 createUserApp.use(cors({ origin: true }));
+createUserApp.use(getUserCredentialsMiddleware);
 
 //http methods available: post, get, delete
 
@@ -24,6 +26,13 @@ createUserApp.post("/", async (request, response) => {
   functions.logger.debug(`Running create user function`);
 
   try {
+    if (!("uid" in request && "admin" in request)) {
+      const message = "Denied access to user creation service";
+      functions.logger.debug(message);
+      response.status(403).json({ message });
+      return;
+    }
+
     const email = request.body.email,
       password = request.body.password,
       admin = request.body.admin;
