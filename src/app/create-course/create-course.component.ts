@@ -18,6 +18,10 @@ import { CoursesService } from "../services/courses.service";
 export class CreateCourseComponent implements OnInit {
   courseId: string;
 
+  percentageChanges$: Observable<number>;
+
+  iconUrl: string;
+
   form = this.fb.group({
     description: ["", Validators.required],
     category: ["BEGINNER", Validators.required],
@@ -33,7 +37,9 @@ export class CreateCourseComponent implements OnInit {
     //in order to generate an unique identifier for the course into FireStore we need
     //to use the AngularFire service
     private afService: AngularFirestore,
-    private router: Router
+    private router: Router,
+    //in order to upload files into FireStore we need to use the AngularFireStorage service
+    private storage: AngularFireStorage
   ) {}
 
   ngOnInit() {
@@ -72,6 +78,39 @@ export class CreateCourseComponent implements OnInit {
         }),
         catchError((error) => {
           console.log("error creating the course");
+          return throwError(error);
+        })
+      )
+      .subscribe();
+  }
+
+  uploadImage(event) {
+    const file: File = event.target.files[0];
+
+    const filePath = `courses/${this.courseId}/${file.name}`;
+
+    const uploadTask = this.storage.upload(filePath, file, {
+      //the metadata of the file
+      //contentType: file.type,
+      //de esta forma la imagen se guarda en cache del navegador del usuario
+      //un cierto tiempo sin necesidad de descargarla cada vez que se acceda
+      //a la página de cursos
+      cacheControl: "max-age=2592000,public",
+    });
+
+    this.percentageChanges$ = uploadTask.percentageChanges();
+
+    uploadTask
+      .snapshotChanges()
+      .pipe(
+        //cuando el observable deje de emitir valores (que la imagen se haya subido al 100%)
+        //se descarga la URL de la imagen donde se encuentra dentro de Firebase storage
+        //para luego poder usar la variable iconUrl para mostar la imagen en el html
+        last(),
+        concatMap(() => this.storage.ref(filePath).getDownloadURL()),
+        tap((url) => (this.iconUrl = url)),
+        catchError((error) => {
+          console.log("error uploading the image");
           return throwError(error);
         })
       )

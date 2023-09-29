@@ -47,6 +47,7 @@ import { MatSlideToggleModule } from "@angular/material/slide-toggle";
 import { CreateUserComponent } from "./create-user/create-user.component";
 import { HTTP_INTERCEPTORS, HttpClientModule } from "@angular/common/http";
 import { MatNativeDateModule } from "@angular/material/core";
+import { AuthInterceptor } from "./services/auth.interceptor";
 
 @NgModule({
   declarations: [
@@ -122,8 +123,13 @@ import { MatNativeDateModule } from "@angular/material/core";
     //---//
     //para no tener que escribir el comando entero cada vez se puede poner en una
     //"npm command" para acortarlo, en este caso se va al fichero package.json
-    //en scripts: ejemplo --> 
+    //en scripts: ejemplo -->
     //"local-dev-firebase": "firebase emulators:start --only firestore,auth,functions --import test-data",
+    {
+      provide: HTTP_INTERCEPTORS,
+      useClass: AuthInterceptor,
+      multi: true,
+    },
   ],
   bootstrap: [AppComponent],
 })

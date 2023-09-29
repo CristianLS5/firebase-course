@@ -16,7 +16,10 @@ export const environment = {
     messagingSenderId: "296139394309",
     appId: "1:296139394309:web:c9ec151773bd49a5147b6c",
   },
-  api: {},
+  api: {
+    //la url es dependiente al entorno, si es en PRD será otra URL
+    createUser: "http://127.0.0.1:5001/fir-course-bcfcb/us-central1/createUser"
+  },
 };
 
 //para conectarse a  firebase localmente a través de emulador por comando se usa:

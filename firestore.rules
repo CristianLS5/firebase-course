@@ -1,7 +1,158 @@
 rules_version = '2';
+service cloud.firestore { 
 
-service cloud.firestore {
-  match /databases/{database}/documents {
+//las rules se suelen aplicar  a los documentos, no a las colecciones
+//se necesita otra rule diferete si se quiere acceder a las colecciones dentro
+//de otras colecciones
+
+//esto es lo mismo que
+  // match /databases/{database}/documents/courses/{courseId} { 
+
+  // allow read: if true;
+
+  // }
+
+  // match /databases/{database}/documents/courses/{courseId}/lessons/{lessonId} { 
+
+  // allow read: if true;
+
+  // }
+
+//esto
+  // match /databases/{database}/documents { 
+
+
+  // //si hay dos rules contradictorias, se aplicará la verdadera siempre,
+  // //el orden de las rules no importa
+  // match /courses/{courseId} {
+  //   allow list: if false;
+  // }
+
+  //   match /courses/{courseId} {
+
+  //     //"read" se puede separar en 2 permisos
+  //     allow get: if true; //para mirar un sólo docoumento
+  //     allow list: if true; //para mirar toda la colleción
+
+  //     //"write" se puede separar en 3 permisos
+  //     //allow write: if false;
+
+  //     allow create: if false;
+  //     allow update: if false;
+  //     allow delete: if false;
+
+
+  //     match /lessons/{lessonId} {
+
+  //       allow read: if true;
+
+  //     }
+
+  //   }
+
+  // }
+
+  match /databases/{database}/documents { 
+
+//para saber si es admin, se accede a las "custom claims" a través de 
+//"request.auth.token"
+    function isAdmin(){
+      return isAuthenticated() && 'admin' in request.auth.token &&
+      request.auth.token.admin == true;
+    }
+
+//para saber si está logueado
+    function isAuthenticated(){
+      return request.auth.uid != null;
+    }
+
+//para saber si está en la whitelist de la base de datos
+    function isKnownUser(){
+      return isAuthenticated() && 
+      exists(/databases/$(database)/documents/users/$(request.auth.uid));
+    }
+
+    function isNonEmptyString(fieldName){
+      return request.resource.data[fieldName] is string &&
+      request.resource.data[fieldName].size() > 0;
+    }
+
+    function isValidCourse(){
+      //con el "request.resource.data" estamos accediendo a la data que se quiere escribir a la ddbb
+      //para añadirla o modicar algún registro
+      //"resource.data" estamos accediendo a los datos existentes de la ddbb
+      return request.resource.data.seqNo is number &&
+      request.resource.data.seqNo >= 0 &&
+      isNonEmptyString("url");
+    }
+
+      match /courses/{courseId} {
+
+        //request.auth contiene toda la info del ususario, entre ellos,
+        //el user ID y cualquier "custom claim" que tenga específico ese usuario
+        //FireStore sever is going to verify that the Jason Web Token is valid, after that
+        //it's going to fill in the UID property and run the security rules
+        //so nobody can fake the identity of a given user, only the users authenticated
+        //using FireBase Authentication 
+        allow read: if isKnownUser();
+
+        //rules para permitir la escritura, en este caso para permitir crear 
+        //nuevos cursos de una forma específica (ejemplo: que el campo URL sea
+        //string y no number)
+
+        allow create, update: if isValidCourse() && isAdmin();
+
+        allow delete: if isAdmin();
+
+        match /lessons/{lessonId} {
+
+          allow read: if isKnownUser();
+
+        }
+
+      }
+
+//al tener la variable path al inicio de la rule, se está considerando que
+//la rule se está aplicando sobre una colección dentro de otra colección
+//en este caso lessons dentro de courses ((collection groups))
+      match /{path=**}/lessons/{lessonId} {
+         allow read: if isKnownUser();
+      }
+
+  }
+
+
+}
+
+
+
+
+
+
+
+
+//no hace falta tener la seguridad de la base de datos en el backend,
+//con este fichero se pueden pasar varias rules de seguridad y se pueden
+//deployar directamente a la base de datos
+//---//
+
+// rules_version = '2'; //la versión de las rules de FireStore
+// service cloud.firestore { //para determinar que tipo de rules son, en este caso para la base de datos de FireStore
+// //cada "match" significa que se esta declarando una rule
+//   match /databases/{database}/documents { //indica la ruta donde se aplica la roule
+//     match /{document=**} { //esta rule se aplicará a todos los documentos
+//       //allow read, write: if request.time < timestamp.date(2023, 10, 18);
+//       allow read, write: if true; //permte leer y escribir
+//     }
+//   }
+// }
+
+///---//
+//cada vez que se hace una modificación o lectura desde la aplicación usando
+//AngularFire, la petición es enviada al servidor de FireStore.
+//El servidor utilizará la configuración que se encuentra en este fichero "firestore.rules"
+//para determinar si las peticiones de modificacion o lectura se pueden hacer o no
+///----///
 
     // This rule allows anyone with your Firestore database reference to view, edit,
     // and delete all data in your Firestore database. It is useful for getting
@@ -12,8 +163,8 @@ service cloud.firestore {
     // Make sure to write security rules for your app before that time, or else
     // all client requests to your Firestore database will be denied until you Update
     // your rules
-    match /{document=**} {
-      allow read, write: if request.time < timestamp.date(2023, 10, 18);
-    }
-  }
-}
+
+///----///
+  //la ventaja de usar emulador es que puedes realizar los cambios de rules en local sin
+  //necesidad de ir cambiándolos en producción cada vez, lo que comporta tiempos de retraso a que
+  //propaguen todos los cambios más el tiempo que tardase en deployarse
