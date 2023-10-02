@@ -12,4 +12,13 @@ admin.initializeApp({
   credential: admin.credential.cert(serviceAccountPath),
 });
 
-async 
+//setting the custom claims of the user that we want to be the admin
+async function initAdmin(adminUid) {
+  admin.auth().setCustomUserClaims(adminUid, { admin: true });
+}
+
+//al cabar la promesa, para saber que se ha acabado el proceso
+initAdmin(userUid).then(() => {
+  console.log("Exiting");
+  process.exit();
+});
